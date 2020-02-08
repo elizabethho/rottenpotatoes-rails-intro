@@ -13,19 +13,40 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
+    @sorting = params[:sort]
     @rate = params[:ratings]
-    if @rate.nil?
+    
+    @rate = params[:ratings]
+    if  @rate.nil?
       @sel_rate = @all_ratings
     else
-     @sel_rate = params[:ratings].keys
+      @sel_rate = params[:ratings].keys
     end
-    #@sel_rate = @all_ratings
-    @movies = Movie.order(params[:sort]).where(rating: @sel_rate).all
+
+    if @sorting.nil?
+      @sorting = session[:sort]
+    else
+      session[:sort] = @sorting
+    end
+    
+    @movies = Movie.order("#{@sorting}").where(rating: @sel_rate).all
+    
     if params[:sort] == 'title'
       @t = 'hilite'
     elsif params[:sort] == 'release_date'
       @r ='hilite'
     end
+    
+    @rate = params[:ratings]
+    if  @rate.nil?
+      @sel_rate = session[:ratings]
+    else
+      @sel_rate = params[:ratings].keys
+      session[:ratings] = @sel_rate
+    end
+
+    @movies = Movie.save_ratings(@sel_rate).order("#{@sorting}").all
+    
   end
 
   def new
